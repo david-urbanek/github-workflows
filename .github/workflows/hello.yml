@@ -1,4 +1,17 @@
+name: 'Hello World'
+on:
+  push:
+    branches: [main]
 jobs:
+  say-hello:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Say Hello'
+        run: echo "Hello, World!"
+      - name: 'Run date'
+        run: date
+      - name: 'Run ls -l'
+        run: ls -l
   simple_deployment_pipeline:
     runs-on: ubuntu-latest
     steps:
