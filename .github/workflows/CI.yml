@@ -2,6 +2,9 @@ name: 'Hello World'
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
 jobs:
   say-hello:
     runs-on: ubuntu-latest
@@ -12,6 +15,7 @@ jobs:
         run: date
       - name: 'Run ls -l'
         run: ls -l
+
   simple_deployment_pipeline:
     runs-on: ubuntu-latest
     steps:
@@ -27,8 +31,30 @@ jobs:
         run: npm test
       - name: Build project
         run: npm run build
-  deploy:
+
+  tag_release:
+    name: Tag release
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: '0'
+
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@v1 # Don't use @master or @v1 unless you're happy to test the latest version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # if you don't want to set write permissions use a PAT token
+          TAG_PREFIX: v
+          PRERELEASE: true
+          DEFAULT_BUMP: patch
+
+  fly_deploy:
     name: Deploy app
+    if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
     needs: simple_deployment_pipeline
     runs-on: ubuntu-latest
     concurrency: deploy-group
