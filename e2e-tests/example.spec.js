@@ -12,7 +12,6 @@ describe('Pokedex', () => {
       ),
     ).toBeVisible()
   })
-
   test('pokemon page can be opened', async ({ page }) => {
     await page.goto('')
     await page.click('text=ivysaur')
